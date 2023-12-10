@@ -64,7 +64,7 @@ public class CalibrationLine
 
     private int GetLastNumber(string line)
     {
-        return this.GetFirstNumber(Utils.Utils.Reverse(line));
+        return this.GetFirstNumber(Shared.Utils.Reverse(line));
     }
 
     private static int CombineNumbers(int start, int end)

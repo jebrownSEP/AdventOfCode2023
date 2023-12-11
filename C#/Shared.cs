@@ -20,7 +20,6 @@ public class Utils
         return new string(charArray);
     }
 
-
     // Adjacent including diagonals
     public static Coordinate[] GetAdjacentCoordinates(Coordinate coord, int maxX, int maxY)
     {

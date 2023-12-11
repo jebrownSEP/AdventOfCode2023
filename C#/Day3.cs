@@ -9,21 +9,27 @@ public class Day3
     public static void Run()
     {
         var input = File.ReadAllText("../inputs/day3.txt");
-        Part1(input);
-        // Part2(input);
+        // Part1(input);
+        Part2(input);
     }
 
     public static void Part1(string input)
     {
-
         var grid = new Grid(input);
 
         var numbersAdjacentToSymbol = grid.GetNumbersAdjacentToSymbol();
         Console.WriteLine(numbersAdjacentToSymbol.Sum());
-        // foreach (int num in numbersAdjacentToSymbol)
+    }
+
+    public static void Part2(string input)
+    {
+        var grid = new Grid(input);
+        var gridGearRatios = grid.GetGearRatios();
+        // foreach (int ratio in gridGearRatios)
         // {
-        //     Console.WriteLine(num);
+        //     Console.WriteLine(ratio);
         // }
+        Console.WriteLine(gridGearRatios.Sum());
     }
 
     public class Grid
@@ -34,6 +40,245 @@ public class Day3
         {
             // Remember these coordinates are actually arranged as y, x since each row (y) holds the x individual character columns
             this.coordinatesGrid = input.Split("\n").Select((row, y) => row.ToCharArray().Select((ch, x) => new CoordinateWithValue(x, y, ch.ToString())).ToArray()).ToArray();
+        }
+
+        public int[] GetGearRatios()
+        {
+            var gearRatios = new List<int>();
+            var starCoordinates = this.GetStarCoordinates();
+            // For each symbol, map out all the coordinates in a SET that have 2 numbers adjacent
+            var uniqueCoordinatesAdjacentToSymbol = new HashSet<CoordinateWithValue>();
+            foreach (CoordinateWithValue symbCoord in starCoordinates)
+            {
+                // var adjacentCoords = Utils.GetAdjacentCoordinates(symbCoord.coordinate, this.coordinatesGrid[0].Length - 1, this.coordinatesGrid.Length - 1);
+                // var adjNumberCoords = adjacentCoords.Select(adjCoord => this.coordinatesGrid[adjCoord.y][adjCoord.x]).Where(coord => coord.isNumber).ToArray();
+                // if (adjNumberCoords.Length > 1)
+                // {
+                var connectedNumberCoordsList = new List<CoordinateWithValue>();
+                var numberConnected = 0;
+                // top 3
+                CoordinateWithValue? topLeft = this.GetTopLeft(symbCoord.coordinate);
+                CoordinateWithValue? top = this.GetTop(symbCoord.coordinate);
+                CoordinateWithValue? topRight = this.GetTopRight(symbCoord.coordinate);
+                CoordinateWithValue? left = this.GetLeft(symbCoord.coordinate);
+                CoordinateWithValue? right = this.GetRight(symbCoord.coordinate);
+                CoordinateWithValue? bottomLeft = this.GetBottomLeft(symbCoord.coordinate);
+                CoordinateWithValue? bottom = this.GetBottom(symbCoord.coordinate);
+                CoordinateWithValue? bottomRight = this.GetBottomRight(symbCoord.coordinate);
+
+                if (topLeft?.isNumber ?? false)
+                {
+                    connectedNumberCoordsList.Add(topLeft);
+                    if (top?.isNumber ?? false)
+                    {
+                        connectedNumberCoordsList.Add(top);
+                        if (topRight?.isNumber ?? false)
+                        {
+                            connectedNumberCoordsList.Add(topRight);
+                            numberConnected++;
+                        }
+                        else
+                        {
+                            numberConnected++;
+                        }
+                    }
+                    else
+                    {
+                        if (topRight?.isNumber ?? false)
+                        {
+                            connectedNumberCoordsList.Add(topRight);
+                            numberConnected += 2;
+                        }
+                        else
+                        {
+                            numberConnected++;
+                        }
+                    }
+                }
+                else
+                {
+                    if (top?.isNumber ?? false)
+                    {
+                        connectedNumberCoordsList.Add(top);
+                        if (topRight?.isNumber ?? false)
+                        {
+                            connectedNumberCoordsList.Add(topRight);
+                            numberConnected++;
+                        }
+                        else
+                        {
+                            numberConnected++;
+                        }
+                    }
+                    else
+                    {
+                        if (topRight?.isNumber ?? false)
+                        {
+                            connectedNumberCoordsList.Add(topRight);
+                            numberConnected++;
+                        }
+                        // else => +=0
+                    }
+                }
+
+                // left
+                if (left?.isNumber ?? false)
+                {
+                    connectedNumberCoordsList.Add(left);
+                    numberConnected++;
+                }
+
+                // right
+                if (right?.isNumber ?? false)
+                {
+                    connectedNumberCoordsList.Add(right);
+                    numberConnected++;
+                }
+
+                // bottom 3
+                if (bottomLeft?.isNumber ?? false)
+                {
+                    connectedNumberCoordsList.Add(bottomLeft);
+                    if (bottom?.isNumber ?? false)
+                    {
+                        connectedNumberCoordsList.Add(bottom);
+                        if (bottomRight?.isNumber ?? false)
+                        {
+                            connectedNumberCoordsList.Add(bottomRight);
+                            numberConnected++;
+                        }
+                        else
+                        {
+                            numberConnected++;
+                        }
+                    }
+                    else
+                    {
+                        if (bottomRight?.isNumber ?? false)
+                        {
+                            connectedNumberCoordsList.Add(bottomRight);
+                            numberConnected += 2;
+                        }
+                        else
+                        {
+                            numberConnected++;
+                        }
+                    }
+                }
+                else
+                {
+                    if (bottom?.isNumber ?? false)
+                    {
+                        connectedNumberCoordsList.Add(bottom);
+                        if (bottomRight?.isNumber ?? false)
+                        {
+                            connectedNumberCoordsList.Add(bottomRight);
+                            numberConnected++;
+                        }
+                        else
+                        {
+                            numberConnected++;
+                        }
+                    }
+                    else
+                    {
+                        if (bottomRight?.isNumber ?? false)
+                        {
+                            connectedNumberCoordsList.Add(bottomRight);
+                            numberConnected++;
+                        }
+                        // else => +=0
+                    }
+                }
+
+                if (numberConnected == 2)
+                {
+                    foreach (CoordinateWithValue connCoord in connectedNumberCoordsList)
+                    {
+                        uniqueCoordinatesAdjacentToSymbol.Add(connCoord);
+                    }
+                    var gearNumbers = this.ParseNumbersFromCoordinates(connectedNumberCoordsList.ToArray());
+                    // There should be exactly 2
+                    if (gearNumbers.Length != 2)
+                    {
+                        throw new Exception("Somehow got !2 gears... " + gearNumbers.Length);
+                    }
+                    gearRatios.Add(gearNumbers[0] * gearNumbers[1]);
+                }
+            }
+            return gearRatios.ToArray();
+        }
+
+        private CoordinateWithValue? GetTopLeft(Coordinate coord)
+        {
+            if (coord.x > 0 && coord.y > 0)
+            {
+                return this.coordinatesGrid[coord.y - 1][coord.x - 1];
+            }
+            return null;
+        }
+
+        private CoordinateWithValue? GetTop(Coordinate coord)
+        {
+            if (coord.y > 0)
+            {
+                return this.coordinatesGrid[coord.y - 1][coord.x];
+            }
+            return null;
+        }
+
+        private CoordinateWithValue? GetTopRight(Coordinate coord)
+        {
+            if (coord.x < this.coordinatesGrid[0].Length - 1)
+            {
+                return this.coordinatesGrid[coord.y - 1][coord.x + 1];
+            }
+            return null;
+        }
+
+        private CoordinateWithValue? GetBottomLeft(Coordinate coord)
+        {
+            if (coord.x > 0 && coord.y < this.coordinatesGrid.Length - 1)
+            {
+                return this.coordinatesGrid[coord.y + 1][coord.x - 1];
+            }
+            return null;
+        }
+
+        private CoordinateWithValue? GetBottom(Coordinate coord)
+        {
+            if (coord.y < this.coordinatesGrid.Length - 1)
+            {
+                return this.coordinatesGrid[coord.y + 1][coord.x];
+            }
+            return null;
+        }
+
+        private CoordinateWithValue? GetBottomRight(Coordinate coord)
+        {
+            if (coord.y < this.coordinatesGrid.Length - 1 && coord.x < this.coordinatesGrid.Length - 1)
+            {
+                return this.coordinatesGrid[coord.y + 1][coord.x + 1];
+            }
+            return null;
+        }
+
+        private CoordinateWithValue? GetLeft(Coordinate coord)
+        {
+            if (coord.x > 0)
+            {
+                return this.coordinatesGrid[coord.y][coord.x - 1];
+            }
+            return null;
+        }
+
+        private CoordinateWithValue? GetRight(Coordinate coord)
+        {
+            if (coord.x < this.coordinatesGrid[0].Length - 1)
+            {
+                return this.coordinatesGrid[coord.y][coord.x + 1];
+            }
+            return null;
         }
 
         public int[] GetNumbersAdjacentToSymbol()
@@ -68,7 +313,6 @@ public class Day3
                     var leftCoordinates = this.GetCoordinatesLeftOf(numCoord.coordinate);
                     var rightCoordinates = this.GetCoordinatesRightOf(numCoord.coordinate);
                     // Mark them visited. 
-                    // TODO: JEB may only need to add right coordinates
                     foreach (CoordinateWithValue lCoord in leftCoordinates)
                     {
                         if (!visitedNumberCoordinates.ContainsKey(lCoord.ToString()))
@@ -134,6 +378,17 @@ public class Day3
             }
             return symbolCoordinates.SelectMany(coord => coord).ToArray();
         }
+
+        private CoordinateWithValue[] GetStarCoordinates()
+        {
+            // Find all the symbols that are not numbers or .
+            var symbolCoordinates = new List<List<CoordinateWithValue>>();
+            foreach (CoordinateWithValue[] coordRow in coordinatesGrid)
+            {
+                symbolCoordinates.Add(new List<CoordinateWithValue>(coordRow.Where(coord => coord.isStar).ToArray()));
+            }
+            return symbolCoordinates.SelectMany(coord => coord).ToArray();
+        }
     }
 
     public class CoordinateWithValue
@@ -141,6 +396,8 @@ public class Day3
         public readonly Coordinate coordinate;
         public readonly bool isSymbol = false;
         public readonly bool isNumber = false;
+
+        public readonly bool isStar = false;
 
         public readonly string value;
         public CoordinateWithValue(int x, int y, string value)
@@ -155,6 +412,10 @@ public class Day3
             else if (!String.Equals(value, "."))
             {
                 this.isSymbol = true;
+                if (String.Equals(value, "*"))
+                {
+                    this.isStar = true;
+                }
             }
         }
 

@@ -20,6 +20,8 @@ public class Utils
         return new string(charArray);
     }
 
+
+
     // Adjacent including diagonals
     public static Coordinate[] GetAdjacentCoordinates(Coordinate coord, int maxX, int maxY)
     {
@@ -88,4 +90,68 @@ public class Coordinate
     {
         return this.x + "," + this.y;
     }
+}
+
+public class CoordinateWithValue
+{
+    public readonly Coordinate coordinate;
+
+    public readonly string value;
+    public CoordinateWithValue(int x, int y, string value)
+    {
+        this.value = value;
+        this.coordinate = new Coordinate(x, y);
+
+    }
+
+    public override string ToString()
+    {
+        return this.coordinate.ToString();
+    }
+}
+
+
+public enum Direction
+{
+    North,
+    East,
+    South,
+    West
+}
+
+
+
+public class Grid
+{
+    public readonly CoordinateWithValue[][] coordinatesGrid;
+
+    public Grid(string input)
+    {
+        // Remember these coordinates are actually arranged as y, x since each row (y) holds the x individual character columns
+        this.coordinatesGrid = input.Split("\n").Select((row, y) => row.ToCharArray().Select((ch, x) => new CoordinateWithValue(x, y, ch.ToString())).ToArray()).ToArray();
+    }
+
+    // y,x
+    public CoordinateWithValue? GetCoordinateInDirection(CoordinateWithValue coord, Direction direction)
+    {
+        if (direction == Direction.North && coord.coordinate.y > 0)
+        {
+            return this.coordinatesGrid[coord.coordinate.y - 1][coord.coordinate.x];
+        }
+        else if (direction == Direction.East && coord.coordinate.x < coordinatesGrid[0].Length - 1)
+        {
+            return this.coordinatesGrid[coord.coordinate.y][coord.coordinate.x + 1];
+        }
+        else if (direction == Direction.South && coord.coordinate.y < coordinatesGrid.Length - 1)
+        {
+            return this.coordinatesGrid[coord.coordinate.y + 1][coord.coordinate.x];
+        }
+        else if (direction == Direction.West && coord.coordinate.x > 0)
+        {
+            return this.coordinatesGrid[coord.coordinate.y][coord.coordinate.x - 1];
+        }
+
+        return null;
+    }
+
 }

@@ -1,4 +1,3 @@
-using System.Collections;
 using Shared;
 
 namespace Days;
@@ -15,7 +14,7 @@ public class Day3
 
     public static void Part1(string input)
     {
-        var grid = new Grid(input);
+        var grid = new Day3Grid(input);
 
         var numbersAdjacentToSymbol = grid.GetNumbersAdjacentToSymbol();
         Console.WriteLine(numbersAdjacentToSymbol.Sum());
@@ -23,7 +22,7 @@ public class Day3
 
     public static void Part2(string input)
     {
-        var grid = new Grid(input);
+        var grid = new Day3Grid(input);
         var gridGearRatios = grid.GetGearRatios();
         // foreach (int ratio in gridGearRatios)
         // {
@@ -32,14 +31,49 @@ public class Day3
         Console.WriteLine(gridGearRatios.Sum());
     }
 
-    public class Grid
+    public class Day3CoordinateWithValue
     {
-        public readonly CoordinateWithValue[][] coordinatesGrid;
+        public readonly Coordinate coordinate;
+        public readonly bool isSymbol = false;
+        public readonly bool isNumber = false;
 
-        public Grid(string input)
+        public readonly bool isStar = false;
+
+        public readonly string value;
+        public Day3CoordinateWithValue(int x, int y, string value)
+        {
+            this.value = value;
+            this.coordinate = new Coordinate(x, y);
+            var isNumeric = int.TryParse(value, out int n);
+            if (isNumeric)
+            {
+                this.isNumber = true;
+            }
+            else if (!String.Equals(value, "."))
+            {
+                this.isSymbol = true;
+                if (String.Equals(value, "*"))
+                {
+                    this.isStar = true;
+                }
+            }
+        }
+
+        public override string ToString()
+        {
+            return this.coordinate.ToString();
+        }
+    }
+
+
+    public class Day3Grid
+    {
+        public readonly Day3CoordinateWithValue[][] coordinatesGrid;
+
+        public Day3Grid(string input)
         {
             // Remember these coordinates are actually arranged as y, x since each row (y) holds the x individual character columns
-            this.coordinatesGrid = input.Split("\n").Select((row, y) => row.ToCharArray().Select((ch, x) => new CoordinateWithValue(x, y, ch.ToString())).ToArray()).ToArray();
+            this.coordinatesGrid = input.Split("\n").Select((row, y) => row.ToCharArray().Select((ch, x) => new Day3CoordinateWithValue(x, y, ch.ToString())).ToArray()).ToArray();
         }
 
         public int[] GetGearRatios()
@@ -47,24 +81,24 @@ public class Day3
             var gearRatios = new List<int>();
             var starCoordinates = this.GetStarCoordinates();
             // For each symbol, map out all the coordinates in a SET that have 2 numbers adjacent
-            var uniqueCoordinatesAdjacentToSymbol = new HashSet<CoordinateWithValue>();
-            foreach (CoordinateWithValue symbCoord in starCoordinates)
+            var uniqueCoordinatesAdjacentToSymbol = new HashSet<Day3CoordinateWithValue>();
+            foreach (Day3CoordinateWithValue symbCoord in starCoordinates)
             {
                 // var adjacentCoords = Utils.GetAdjacentCoordinates(symbCoord.coordinate, this.coordinatesGrid[0].Length - 1, this.coordinatesGrid.Length - 1);
                 // var adjNumberCoords = adjacentCoords.Select(adjCoord => this.coordinatesGrid[adjCoord.y][adjCoord.x]).Where(coord => coord.isNumber).ToArray();
                 // if (adjNumberCoords.Length > 1)
                 // {
-                var connectedNumberCoordsList = new List<CoordinateWithValue>();
+                var connectedNumberCoordsList = new List<Day3CoordinateWithValue>();
                 var numberConnected = 0;
                 // top 3
-                CoordinateWithValue? topLeft = this.GetTopLeft(symbCoord.coordinate);
-                CoordinateWithValue? top = this.GetTop(symbCoord.coordinate);
-                CoordinateWithValue? topRight = this.GetTopRight(symbCoord.coordinate);
-                CoordinateWithValue? left = this.GetLeft(symbCoord.coordinate);
-                CoordinateWithValue? right = this.GetRight(symbCoord.coordinate);
-                CoordinateWithValue? bottomLeft = this.GetBottomLeft(symbCoord.coordinate);
-                CoordinateWithValue? bottom = this.GetBottom(symbCoord.coordinate);
-                CoordinateWithValue? bottomRight = this.GetBottomRight(symbCoord.coordinate);
+                Day3CoordinateWithValue? topLeft = this.GetTopLeft(symbCoord.coordinate);
+                Day3CoordinateWithValue? top = this.GetTop(symbCoord.coordinate);
+                Day3CoordinateWithValue? topRight = this.GetTopRight(symbCoord.coordinate);
+                Day3CoordinateWithValue? left = this.GetLeft(symbCoord.coordinate);
+                Day3CoordinateWithValue? right = this.GetRight(symbCoord.coordinate);
+                Day3CoordinateWithValue? bottomLeft = this.GetBottomLeft(symbCoord.coordinate);
+                Day3CoordinateWithValue? bottom = this.GetBottom(symbCoord.coordinate);
+                Day3CoordinateWithValue? bottomRight = this.GetBottomRight(symbCoord.coordinate);
 
                 if (topLeft?.isNumber ?? false)
                 {
@@ -193,7 +227,7 @@ public class Day3
 
                 if (numberConnected == 2)
                 {
-                    foreach (CoordinateWithValue connCoord in connectedNumberCoordsList)
+                    foreach (Day3CoordinateWithValue connCoord in connectedNumberCoordsList)
                     {
                         uniqueCoordinatesAdjacentToSymbol.Add(connCoord);
                     }
@@ -209,7 +243,7 @@ public class Day3
             return gearRatios.ToArray();
         }
 
-        private CoordinateWithValue? GetTopLeft(Coordinate coord)
+        private Day3CoordinateWithValue? GetTopLeft(Coordinate coord)
         {
             if (coord.x > 0 && coord.y > 0)
             {
@@ -218,7 +252,7 @@ public class Day3
             return null;
         }
 
-        private CoordinateWithValue? GetTop(Coordinate coord)
+        private Day3CoordinateWithValue? GetTop(Coordinate coord)
         {
             if (coord.y > 0)
             {
@@ -227,7 +261,7 @@ public class Day3
             return null;
         }
 
-        private CoordinateWithValue? GetTopRight(Coordinate coord)
+        private Day3CoordinateWithValue? GetTopRight(Coordinate coord)
         {
             if (coord.x < this.coordinatesGrid[0].Length - 1)
             {
@@ -236,7 +270,7 @@ public class Day3
             return null;
         }
 
-        private CoordinateWithValue? GetBottomLeft(Coordinate coord)
+        private Day3CoordinateWithValue? GetBottomLeft(Coordinate coord)
         {
             if (coord.x > 0 && coord.y < this.coordinatesGrid.Length - 1)
             {
@@ -245,7 +279,7 @@ public class Day3
             return null;
         }
 
-        private CoordinateWithValue? GetBottom(Coordinate coord)
+        private Day3CoordinateWithValue? GetBottom(Coordinate coord)
         {
             if (coord.y < this.coordinatesGrid.Length - 1)
             {
@@ -254,7 +288,7 @@ public class Day3
             return null;
         }
 
-        private CoordinateWithValue? GetBottomRight(Coordinate coord)
+        private Day3CoordinateWithValue? GetBottomRight(Coordinate coord)
         {
             if (coord.y < this.coordinatesGrid.Length - 1 && coord.x < this.coordinatesGrid.Length - 1)
             {
@@ -263,7 +297,7 @@ public class Day3
             return null;
         }
 
-        private CoordinateWithValue? GetLeft(Coordinate coord)
+        private Day3CoordinateWithValue? GetLeft(Coordinate coord)
         {
             if (coord.x > 0)
             {
@@ -272,7 +306,7 @@ public class Day3
             return null;
         }
 
-        private CoordinateWithValue? GetRight(Coordinate coord)
+        private Day3CoordinateWithValue? GetRight(Coordinate coord)
         {
             if (coord.x < this.coordinatesGrid[0].Length - 1)
             {
@@ -285,12 +319,12 @@ public class Day3
         {
             var symbolCoordinates = this.GetSymbolCoordinates();
             // For each symbol, map out all the coordinates in a SET that have numbers adjacent
-            var uniqueCoordinatesAdjacentToSymbol = new HashSet<CoordinateWithValue>();
-            foreach (CoordinateWithValue symbCoord in symbolCoordinates)
+            var uniqueCoordinatesAdjacentToSymbol = new HashSet<Day3CoordinateWithValue>();
+            foreach (Day3CoordinateWithValue symbCoord in symbolCoordinates)
             {
                 var adjacentCoords = Utils.GetAdjacentCoordinates(symbCoord.coordinate, this.coordinatesGrid[0].Length - 1, this.coordinatesGrid.Length - 1);
                 var adjNumberCoords = adjacentCoords.Select(adjCoord => this.coordinatesGrid[adjCoord.y][adjCoord.x]).Where(coord => coord.isNumber).ToArray();
-                foreach (CoordinateWithValue adjNumberCoord in adjNumberCoords)
+                foreach (Day3CoordinateWithValue adjNumberCoord in adjNumberCoords)
                 {
                     // Make sure the set is unique for coordinates...
                     uniqueCoordinatesAdjacentToSymbol.Add(adjNumberCoord);
@@ -300,20 +334,20 @@ public class Day3
             return this.ParseNumbersFromCoordinates(uniqueCoordinatesAdjacentToSymbol.ToArray());
         }
 
-        private int[] ParseNumbersFromCoordinates(CoordinateWithValue[] numberCoordinates)
+        private int[] ParseNumbersFromCoordinates(Day3CoordinateWithValue[] numberCoordinates)
         {
             // Then for each value in the set, make them numbers
             var visitedNumberCoordinates = new Dictionary<string, bool>();
             var parsedNumbers = new List<int>();
 
-            foreach (CoordinateWithValue numCoord in numberCoordinates)
+            foreach (Day3CoordinateWithValue numCoord in numberCoordinates)
             {
                 if (!visitedNumberCoordinates.ContainsKey(numCoord.ToString()))
                 {
                     var leftCoordinates = this.GetCoordinatesLeftOf(numCoord.coordinate);
                     var rightCoordinates = this.GetCoordinatesRightOf(numCoord.coordinate);
                     // Mark them visited. 
-                    foreach (CoordinateWithValue lCoord in leftCoordinates)
+                    foreach (Day3CoordinateWithValue lCoord in leftCoordinates)
                     {
                         if (!visitedNumberCoordinates.ContainsKey(lCoord.ToString()))
                         {
@@ -324,7 +358,7 @@ public class Day3
                             Console.WriteLine("Duplicate lCoord " + lCoord.ToString() + " " + lCoord.value);
                         }
                     }
-                    foreach (CoordinateWithValue rCoord in rightCoordinates)
+                    foreach (Day3CoordinateWithValue rCoord in rightCoordinates)
                     {
                         if (!visitedNumberCoordinates.ContainsKey(rCoord.ToString()))
                         {
@@ -344,9 +378,9 @@ public class Day3
             return parsedNumbers.ToArray();
         }
 
-        private CoordinateWithValue[] GetCoordinatesLeftOf(Coordinate coord)
+        private Day3CoordinateWithValue[] GetCoordinatesLeftOf(Coordinate coord)
         {
-            var leftCoords = new List<CoordinateWithValue>();
+            var leftCoords = new List<Day3CoordinateWithValue>();
             var currentX = coord.x - 1;
             while (currentX >= 0 && this.coordinatesGrid[coord.y][currentX].isNumber)
             {
@@ -356,9 +390,9 @@ public class Day3
             }
             return leftCoords.ToArray();
         }
-        private CoordinateWithValue[] GetCoordinatesRightOf(Coordinate coord)
+        private Day3CoordinateWithValue[] GetCoordinatesRightOf(Coordinate coord)
         {
-            var rightCoords = new List<CoordinateWithValue>();
+            var rightCoords = new List<Day3CoordinateWithValue>();
             var currentX = coord.x + 1;
             while (currentX <= this.coordinatesGrid[0].Length - 1 && this.coordinatesGrid[coord.y][currentX].isNumber)
             {
@@ -368,68 +402,28 @@ public class Day3
             return rightCoords.ToArray();
         }
 
-        private CoordinateWithValue[] GetSymbolCoordinates()
+        private Day3CoordinateWithValue[] GetSymbolCoordinates()
         {
             // Find all the symbols that are not numbers or .
-            var symbolCoordinates = new List<List<CoordinateWithValue>>();
-            foreach (CoordinateWithValue[] coordRow in coordinatesGrid)
+            var symbolCoordinates = new List<List<Day3CoordinateWithValue>>();
+            foreach (Day3CoordinateWithValue[] coordRow in coordinatesGrid)
             {
-                symbolCoordinates.Add(new List<CoordinateWithValue>(coordRow.Where(coord => coord.isSymbol).ToArray()));
+                symbolCoordinates.Add(new List<Day3CoordinateWithValue>(coordRow.Where(coord => coord.isSymbol).ToArray()));
             }
             return symbolCoordinates.SelectMany(coord => coord).ToArray();
         }
 
-        private CoordinateWithValue[] GetStarCoordinates()
+        private Day3CoordinateWithValue[] GetStarCoordinates()
         {
             // Find all the symbols that are not numbers or .
-            var symbolCoordinates = new List<List<CoordinateWithValue>>();
-            foreach (CoordinateWithValue[] coordRow in coordinatesGrid)
+            var symbolCoordinates = new List<List<Day3CoordinateWithValue>>();
+            foreach (Day3CoordinateWithValue[] coordRow in coordinatesGrid)
             {
-                symbolCoordinates.Add(new List<CoordinateWithValue>(coordRow.Where(coord => coord.isStar).ToArray()));
+                symbolCoordinates.Add(new List<Day3CoordinateWithValue>(coordRow.Where(coord => coord.isStar).ToArray()));
             }
             return symbolCoordinates.SelectMany(coord => coord).ToArray();
         }
     }
-
-    public class CoordinateWithValue
-    {
-        public readonly Coordinate coordinate;
-        public readonly bool isSymbol = false;
-        public readonly bool isNumber = false;
-
-        public readonly bool isStar = false;
-
-        public readonly string value;
-        public CoordinateWithValue(int x, int y, string value)
-        {
-            this.value = value;
-            this.coordinate = new Coordinate(x, y);
-            var isNumeric = int.TryParse(value, out int n);
-            if (isNumeric)
-            {
-                this.isNumber = true;
-            }
-            else if (!String.Equals(value, "."))
-            {
-                this.isSymbol = true;
-                if (String.Equals(value, "*"))
-                {
-                    this.isStar = true;
-                }
-            }
-        }
-
-        public override string ToString()
-        {
-            return this.coordinate.ToString();
-        }
-    }
-
-
-    // public static void Part2(string input)
-    // {
-    //     var games = input.Split("\n").Select((line, index) => new Game(line, index + 1)).ToArray();
-    //     var totalPower = games.Select(game => game.power).Sum();
-    //     Console.WriteLine(totalPower);
-    // }
 }
+
+
